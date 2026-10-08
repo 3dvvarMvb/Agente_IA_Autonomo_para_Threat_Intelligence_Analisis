@@ -1,0 +1,28 @@
+{
+  "data": {
+    "id": "8.8.8.8",
+    "type": "ip_address",
+    "links": {
+      "self": "https://www.virustotal.com/api/v3/ip_addresses/8.8.8.8"
+    },
+    "attributes": {
+      "as_owner": "Google LLC",
+      "asn": 15169,
+      "country": "US",
+      "reputation": 85,
+      "tags": ["dns", "google", "resolver"],
+      "categories": {
+        "Forcepoint ThreatSeeker": "information technology",
+        "Sophos": "infrastructure"
+      },
+      "last_analysis_date": 1710000000,
+      "last_analysis_stats": {
+        "harmless": 78,
+        "malicious": 0,
+        "suspicious": 0,
+        "undetected": 12,
+        "timeout": 0
+      }
+    }
+  }
+}

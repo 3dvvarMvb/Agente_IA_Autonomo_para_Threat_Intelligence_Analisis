@@ -1,0 +1,28 @@
+{
+  "ip_str": "8.8.8.8",
+  "org": "Google LLC",
+  "isp": "Google LLC",
+  "asn": "AS15169",
+  "os": null,
+  "ports": [53, 443],
+  "hostnames": ["dns.google"],
+  "tags": ["cloud", "dns"],
+  "vulns": ["CVE-2019-0708"],
+  "last_update": "2024-03-01T12:00:00.000000",
+  "data": [
+    {
+      "port": 53,
+      "transport": "udp",
+      "product": "Google DNS",
+      "version": null,
+      "data": "Recursion: enabled"
+    },
+    {
+      "port": 443,
+      "transport": "tcp",
+      "product": "Google Frontend",
+      "version": null,
+      "data": "HTTP/2.0 404 Not Found"
+    }
+  ]
+}

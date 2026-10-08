@@ -1,0 +1,22 @@
+{
+  "data": {
+    "id": "c2-malicious-traffic.net",
+    "type": "domain",
+    "attributes": {
+      "reputation": -35,
+      "tags": ["c2", "cobalt-strike", "malware"],
+      "categories": {
+        "BitDefender": "malware",
+        "Kaspersky": "command and control"
+      },
+      "last_analysis_date": 1710001000,
+      "last_analysis_stats": {
+        "harmless": 5,
+        "malicious": 42,
+        "suspicious": 6,
+        "undetected": 18,
+        "timeout": 0
+      }
+    }
+  }
+}

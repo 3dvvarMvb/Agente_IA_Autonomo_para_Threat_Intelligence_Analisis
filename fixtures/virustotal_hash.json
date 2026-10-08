@@ -1,0 +1,23 @@
+{
+  "data": {
+    "id": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "type": "file",
+    "attributes": {
+      "meaningful_name": "ransomware_payload.exe",
+      "reputation": -50,
+      "tags": ["ransomware", "trojan", "dropper"],
+      "categories": {
+        "Microsoft": "Trojan:Win32/Wacatac.B!ml",
+        "CrowdStrike": "win/malicious_confidence_100%"
+      },
+      "last_analysis_date": 1710002000,
+      "last_analysis_stats": {
+        "harmless": 0,
+        "malicious": 65,
+        "suspicious": 3,
+        "undetected": 4,
+        "timeout": 0
+      }
+    }
+  }
+}

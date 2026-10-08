@@ -1,0 +1,194 @@
+"""Domain models for unified extraction results, threat findings, and technical reports."""
+
+import uuid
+from datetime import UTC, datetime
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+from ti_agent.models.indicator import IndicatorType, ParsedIndicator
+from ti_agent.models.nvd import NvdCveData
+from ti_agent.models.shodan import ShodanData
+from ti_agent.models.virustotal import VirusTotalData
+
+
+class ProviderStatus(BaseModel):
+    """Execution status for an individual external threat intelligence provider."""
+
+    model_config = ConfigDict(frozen=True)
+
+    provider: str = Field(description="Provider name (virustotal, shodan, nvd)")
+    success: bool = Field(description="Whether the query succeeded")
+    error_message: str | None = Field(
+        default=None, description="Error reason if query failed"
+    )
+    elapsed_ms: float = Field(default=0.0, description="Response time in milliseconds")
+
+
+class ExtractionResult(BaseModel):
+    """Unified container aggregating telemetry from all external threat intelligence feeds."""
+
+    model_config = ConfigDict(frozen=True)
+
+    indicator: ParsedIndicator = Field(description="Normalized target indicator")
+    virustotal: VirusTotalData | None = Field(
+        default=None, description="VirusTotal telemetry if queried"
+    )
+    shodan: ShodanData | None = Field(
+        default=None, description="Shodan telemetry if queried"
+    )
+    nvd: NvdCveData | None = Field(
+        default=None, description="NIST NVD telemetry if queried"
+    )
+    statuses: list[ProviderStatus] = Field(
+        default_factory=list, description="Per-provider execution results"
+    )
+
+    @property
+    def is_degraded(self) -> bool:
+        """True if any queried provider returned an error."""
+        return any(not s.success for s in self.statuses)
+
+    @property
+    def successful_providers(self) -> list[str]:
+        """List of providers that succeeded."""
+        return [s.provider for s in self.statuses if s.success]
+
+    @property
+    def failed_providers(self) -> list[str]:
+        """List of providers that failed."""
+        return [s.provider for s in self.statuses if not s.success]
+
+
+class MitreTechnique(BaseModel):
+    """Mapped MITRE ATT&CK enterprise technique."""
+
+    model_config = ConfigDict(frozen=True)
+
+    technique_id: str = Field(description="MITRE ATT&CK ID (e.g. T1190)")
+    name: str = Field(description="Technique name (e.g. Exploit Public-Facing Application)")
+    tactic: str = Field(description="Tactic category (e.g. Initial Access)")
+    description: str = Field(description="Brief summary of technique behavior")
+    relevance_explanation: str = Field(
+        description="Justification for how this technique relates to the observed telemetry"
+    )
+
+
+class Mitigation(BaseModel):
+    """Actionable remediation or defense countermeasure."""
+
+    model_config = ConfigDict(frozen=True)
+
+    title: str = Field(description="Clear mitigation action title")
+    description: str = Field(description="Explanation of the mitigation mechanism")
+    priority: Literal["CRITICAL", "HIGH", "MEDIUM", "LOW"] = Field(
+        description="Implementation priority based on exposure and risk"
+    )
+    category: str = Field(
+        description="Category: Patching, Network Hardening, Detection Rule, Configuration Change"
+    )
+    actionable_steps: list[str] = Field(
+        default_factory=list, description="Concrete step-by-step instructions for engineers"
+    )
+
+
+class ThreatReport(BaseModel):
+    """Comprehensive final technical threat intelligence analysis report."""
+
+    model_config = ConfigDict(frozen=True)
+
+    report_id: str = Field(
+        default_factory=lambda: f"TR-{uuid.uuid4().hex[:8].upper()}",
+        description="Unique report tracking identifier",
+    )
+    generated_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC),
+        description="UTC generation timestamp",
+    )
+    target: str = Field(description="Target analyzed (IP, domain, hash, CVE)")
+    target_type: IndicatorType = Field(description="Classified indicator type")
+    executive_summary: str = Field(
+        description="Concise C-level and SOC lead executive overview"
+    )
+    severity_level: Literal["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"] = Field(
+        description="Overall synthesized severity level"
+    )
+    risk_score: float = Field(
+        ge=0.0,
+        le=10.0,
+        description="Calculated composite risk score (0.0 - 10.0)",
+    )
+    risk_rationale: str = Field(
+        description="Mathematical and contextual justification for the assigned risk score"
+    )
+    technical_evidence: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Structured key findings extracted from telemetry feeds",
+    )
+    correlated_cves: list[str] = Field(
+        default_factory=list,
+        description="List of CVE IDs directly correlated to this indicator",
+    )
+    mitre_techniques: list[MitreTechnique] = Field(
+        default_factory=list,
+        description="Mapped MITRE ATT&CK techniques with justifications",
+    )
+    mitigations: list[Mitigation] = Field(
+        default_factory=list,
+        description="Prioritized actionable remediation recommendations",
+    )
+    references: list[str] = Field(
+        default_factory=list,
+        description="Verified reference URLs and vendor advisories",
+    )
+    execution_metadata: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Agent runtime metadata: steps taken, duration, token usage",
+    )
+
+    def to_markdown(self) -> str:
+        """Render report as formatted GitHub-Flavored Markdown."""
+        cves_str = ", ".join(self.correlated_cves) if self.correlated_cves else "None observed"
+
+        md = [
+            f"# Threat Intelligence Report: {self.target}",
+            f"**Report ID:** `{self.report_id}` | **Generated:** `{self.generated_at.strftime('%Y-%m-%d %H:%M:%S UTC')}`",
+            f"**Indicator Type:** `{self.target_type.value.upper()}` | **Severity:** **{self.severity_level}** | **Risk Score:** `{self.risk_score:.1f}/10.0`\n",
+            "## Executive Summary",
+            self.executive_summary,
+            "\n## Risk Assessment & Rationale",
+            f"- **Composite Risk Score:** `{self.risk_score:.1f} / 10.0`",
+            f"- **Correlated CVEs:** {cves_str}",
+            f"- **Rationale:** {self.risk_rationale}\n",
+            "## Technical Evidence & Observations",
+        ]
+
+        for k, v in self.technical_evidence.items():
+            md.append(f"- **{k}:** {v}")
+
+        if self.mitre_techniques:
+            md.append("\n## MITRE ATT&CK Mapping")
+            md.append("| ID | Technique | Tactic | Relevance |")
+            md.append("| :--- | :--- | :--- | :--- |")
+            for t in self.mitre_techniques:
+                md.append(
+                    f"| `{t.technique_id}` | {t.name} | {t.tactic} | {t.relevance_explanation} |"
+                )
+
+        if self.mitigations:
+            md.append("\n## Actionable Mitigations")
+            for m in self.mitigations:
+                md.append(f"### [{m.priority}] {m.title} ({m.category})")
+                md.append(f"{m.description}\n")
+                if m.actionable_steps:
+                    md.append("**Implementation Steps:**")
+                    for step in m.actionable_steps:
+                        md.append(f"1. {step}")
+                md.append("")
+
+        if self.references:
+            md.append("## References & Advisories")
+            for ref in self.references:
+                md.append(f"- <{ref}>")
+
+        return "\n".join(md)
