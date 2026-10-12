@@ -30,7 +30,7 @@ class TestIndicatorParsing:
         assert indicator.value == "2001:db8:85a3::8a2e:370:7334"
 
     def test_parse_domain(self) -> None:
-        indicator = ParsedIndicator.parse("https://evil-site.co.uk/path?query=1")
+        indicator = ParsedIndicator.parse("evil-site.co.uk")
         assert indicator.type == IndicatorType.DOMAIN
         assert indicator.value == "evil-site.co.uk"
 
@@ -38,6 +38,29 @@ class TestIndicatorParsing:
         indicator = ParsedIndicator.parse("api.github.com")
         assert indicator.type == IndicatorType.DOMAIN
         assert indicator.value == "api.github.com"
+
+    def test_parse_url(self) -> None:
+        indicator = ParsedIndicator.parse("https://evil-site.co.uk/path?query=1")
+        assert indicator.type == IndicatorType.URL
+        assert indicator.value == "https://evil-site.co.uk/path?query=1"
+        assert indicator.url_host == "evil-site.co.uk"
+        assert indicator.url_port == 443
+        assert indicator.is_local_target is False
+
+    def test_parse_localhost_url(self) -> None:
+        indicator = ParsedIndicator.parse("http://localhost:8080/dashboard")
+        assert indicator.type == IndicatorType.URL
+        assert indicator.value == "http://localhost:8080/dashboard"
+        assert indicator.url_host == "localhost"
+        assert indicator.url_port == 8080
+        assert indicator.is_local_target is True
+
+    def test_parse_private_ip_url(self) -> None:
+        indicator = ParsedIndicator.parse("http://192.168.1.100:3000/api/v1")
+        assert indicator.type == IndicatorType.URL
+        assert indicator.url_host == "192.168.1.100"
+        assert indicator.url_port == 3000
+        assert indicator.is_local_target is True
 
     def test_parse_md5(self) -> None:
         raw = "44D88612FEA8A8F36DE82E1278ABB02F"
@@ -141,7 +164,10 @@ class TestThreatReportModel:
             severity_level="CRITICAL",
             risk_score=10.0,
             risk_rationale="Unauthenticated network RCE with public exploit code.",
-            technical_evidence={"CVSS": 10.0, "Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"},
+            technical_evidence={
+                "CVSS": 10.0,
+                "Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+            },
             correlated_cves=["CVE-2021-44228"],
             mitre_techniques=[
                 MitreTechnique(
@@ -164,11 +190,19 @@ class TestThreatReportModel:
             references=["https://logging.apache.org/log4j/2.x/security.html"],
         )
 
-        md = report.to_markdown()
-        assert "# Threat Intelligence Report: CVE-2021-44228" in md
-        assert "CRITICAL" in md
-        assert "T1190" in md
-        assert "Upgrade Log4j" in md
+        # Default (Spanish) markdown export
+        md_es = report.to_markdown()
+        assert "# Reporte de Inteligencia de Amenazas: CVE-2021-44228" in md_es
+        assert "CRITICAL" in md_es
+        assert "T1190" in md_es
+        assert "Upgrade Log4j" in md_es
+        assert "Pasos de Implementación:" in md_es
+
+        # Explicit English markdown export
+        md_en = report.to_markdown(lang="en")
+        assert "# Threat Intelligence Report: CVE-2021-44228" in md_en
+        assert "CRITICAL" in md_en
+        assert "Implementation Steps:" in md_en
         assert report.report_id.startswith("TR-")
 
     def test_extraction_result_helpers(self) -> None:
@@ -177,7 +211,9 @@ class TestThreatReportModel:
             indicator=indicator,
             statuses=[
                 ProviderStatus(provider="virustotal", success=True, elapsed_ms=120.0),
-                ProviderStatus(provider="shodan", success=False, error_message="Timeout", elapsed_ms=5000.0),
+                ProviderStatus(
+                    provider="shodan", success=False, error_message="Timeout", elapsed_ms=5000.0
+                ),
             ],
         )
         assert res.is_degraded is True

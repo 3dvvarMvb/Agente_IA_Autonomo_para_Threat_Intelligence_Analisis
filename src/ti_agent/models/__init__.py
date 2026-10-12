@@ -11,6 +11,7 @@ from ti_agent.models.report import (
 )
 from ti_agent.models.shodan import ShodanData, ShodanService
 from ti_agent.models.virustotal import VirusTotalData, VirusTotalStats
+from ti_agent.models.web_audit import CookieSecurityCheck, SecurityHeaderCheck, WebAuditResult
 
 __all__ = [
     "IndicatorType",
@@ -26,4 +27,7 @@ __all__ = [
     "MitreTechnique",
     "Mitigation",
     "ThreatReport",
+    "WebAuditResult",
+    "SecurityHeaderCheck",
+    "CookieSecurityCheck",
 ]

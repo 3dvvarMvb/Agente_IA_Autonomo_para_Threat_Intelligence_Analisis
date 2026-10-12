@@ -1,6 +1,5 @@
 """NIST National Vulnerability Database (NVD) API 2.0 asynchronous client."""
 
-
 from ti_agent.core.config import Settings, get_settings
 from ti_agent.core.logging import get_logger
 from ti_agent.models.indicator import IndicatorType, ParsedIndicator

@@ -82,6 +82,7 @@ module = [
     "diskcache.*",
     "chromadb.*",
     "langchain_chroma.*",
+    "langchain_openai.*",
     "pytest_httpx.*",
 ]
 ignore_missing_imports = true

@@ -1,6 +1,5 @@
 """VirusTotal API v3 asynchronous client."""
 
-
 from ti_agent.core.config import Settings, get_settings
 from ti_agent.core.exceptions import AuthenticationError
 from ti_agent.core.logging import get_logger
@@ -56,9 +55,7 @@ class VirusTotalClient(BaseApiClient):
             headers=self._get_headers(),
             fixture_fallback="virustotal_domain",
         )
-        return VirusTotalData.from_api_response(
-            target=domain, target_type="domain", raw_json=data
-        )
+        return VirusTotalData.from_api_response(target=domain, target_type="domain", raw_json=data)
 
     async def get_file_report(self, file_hash: str) -> VirusTotalData:
         """Fetch threat intelligence analysis for an MD5, SHA1, or SHA256 file hash."""
@@ -68,9 +65,7 @@ class VirusTotalClient(BaseApiClient):
             headers=self._get_headers(),
             fixture_fallback="virustotal_hash",
         )
-        return VirusTotalData.from_api_response(
-            target=file_hash, target_type="hash", raw_json=data
-        )
+        return VirusTotalData.from_api_response(target=file_hash, target_type="hash", raw_json=data)
 
     async def lookup(self, indicator: ParsedIndicator) -> VirusTotalData | None:
         """Dispatch query according to indicator type."""

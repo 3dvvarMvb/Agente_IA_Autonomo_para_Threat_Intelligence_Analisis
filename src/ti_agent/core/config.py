@@ -113,10 +113,18 @@ class Settings(BaseSettings):
         ge=1000,
         description="Maximum cumulative tokens budget per agent run",
     )
-    log_level: str = Field(
-        default="INFO",
-        description="Logging level (DEBUG, INFO, WARNING, ERROR)",
+    # Language Settings
+    report_language: Literal["auto", "es", "en"] = Field(
+        default="auto",
+        description="Report language: 'auto' (detect from OS display language), 'es', or 'en'",
     )
+
+    @property
+    def resolved_language(self) -> Literal["es", "en"]:
+        """Resolve effective report language taking into account auto detection."""
+        from ti_agent.core.i18n import resolve_language
+
+        return resolve_language(settings=self)
 
 
 @lru_cache

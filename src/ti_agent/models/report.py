@@ -10,6 +10,7 @@ from ti_agent.models.indicator import IndicatorType, ParsedIndicator
 from ti_agent.models.nvd import NvdCveData
 from ti_agent.models.shodan import ShodanData
 from ti_agent.models.virustotal import VirusTotalData
+from ti_agent.models.web_audit import WebAuditResult
 
 
 class ProviderStatus(BaseModel):
@@ -19,9 +20,7 @@ class ProviderStatus(BaseModel):
 
     provider: str = Field(description="Provider name (virustotal, shodan, nvd)")
     success: bool = Field(description="Whether the query succeeded")
-    error_message: str | None = Field(
-        default=None, description="Error reason if query failed"
-    )
+    error_message: str | None = Field(default=None, description="Error reason if query failed")
     elapsed_ms: float = Field(default=0.0, description="Response time in milliseconds")
 
 
@@ -34,11 +33,10 @@ class ExtractionResult(BaseModel):
     virustotal: VirusTotalData | None = Field(
         default=None, description="VirusTotal telemetry if queried"
     )
-    shodan: ShodanData | None = Field(
-        default=None, description="Shodan telemetry if queried"
-    )
-    nvd: NvdCveData | None = Field(
-        default=None, description="NIST NVD telemetry if queried"
+    shodan: ShodanData | None = Field(default=None, description="Shodan telemetry if queried")
+    nvd: NvdCveData | None = Field(default=None, description="NIST NVD telemetry if queried")
+    web_audit: WebAuditResult | None = Field(
+        default=None, description="Dynamic web application security inspection results"
     )
     statuses: list[ProviderStatus] = Field(
         default_factory=list, description="Per-provider execution results"
@@ -107,9 +105,7 @@ class ThreatReport(BaseModel):
     )
     target: str = Field(description="Target analyzed (IP, domain, hash, CVE)")
     target_type: IndicatorType = Field(description="Classified indicator type")
-    executive_summary: str = Field(
-        description="Concise C-level and SOC lead executive overview"
-    )
+    executive_summary: str = Field(description="Concise C-level and SOC lead executive overview")
     severity_level: Literal["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"] = Field(
         description="Overall synthesized severity level"
     )
@@ -141,53 +137,63 @@ class ThreatReport(BaseModel):
         default_factory=list,
         description="Verified reference URLs and vendor advisories",
     )
+    language: Literal["es", "en"] = Field(
+        default="es",
+        description="Language used for the report (es/en)",
+    )
     execution_metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="Agent runtime metadata: steps taken, duration, token usage",
     )
 
-    def to_markdown(self) -> str:
-        """Render report as formatted GitHub-Flavored Markdown."""
-        cves_str = ", ".join(self.correlated_cves) if self.correlated_cves else "None observed"
+    def to_markdown(self, lang: str | None = None) -> str:
+        """Render report as formatted GitHub-Flavored Markdown in specified or report language."""
+        from ti_agent.core.i18n import resolve_language, t
+
+        resolved_lang = resolve_language(lang or self.language)
+        none_str = t("none_observed", lang=resolved_lang)
+        cves_str = ", ".join(self.correlated_cves) if self.correlated_cves else none_str
 
         md = [
-            f"# Threat Intelligence Report: {self.target}",
-            f"**Report ID:** `{self.report_id}` | **Generated:** `{self.generated_at.strftime('%Y-%m-%d %H:%M:%S UTC')}`",
-            f"**Indicator Type:** `{self.target_type.value.upper()}` | **Severity:** **{self.severity_level}** | **Risk Score:** `{self.risk_score:.1f}/10.0`\n",
-            "## Executive Summary",
+            f"# {t('md_report_title', lang=resolved_lang)}: {self.target}",
+            f"**{t('md_report_id', lang=resolved_lang)}:** `{self.report_id}` | **{t('md_generated', lang=resolved_lang)}:** `{self.generated_at.strftime('%Y-%m-%d %H:%M:%S UTC')}`",
+            f"**{t('md_indicator_type', lang=resolved_lang)}:** `{self.target_type.value.upper()}` | **{t('md_severity', lang=resolved_lang)}:** **{self.severity_level}** | **{t('md_risk_score', lang=resolved_lang)}:** `{self.risk_score:.1f}/10.0`\n",
+            f"## {t('executive_summary', lang=resolved_lang)}",
             self.executive_summary,
-            "\n## Risk Assessment & Rationale",
-            f"- **Composite Risk Score:** `{self.risk_score:.1f} / 10.0`",
-            f"- **Correlated CVEs:** {cves_str}",
-            f"- **Rationale:** {self.risk_rationale}\n",
-            "## Technical Evidence & Observations",
+            f"\n## {t('md_risk_assessment', lang=resolved_lang)}",
+            f"- **{t('md_composite_score', lang=resolved_lang)}:** `{self.risk_score:.1f} / 10.0`",
+            f"- **{t('correlated_cves', lang=resolved_lang)}:** {cves_str}",
+            f"- **{t('risk_rationale', lang=resolved_lang)}:** {self.risk_rationale}\n",
+            f"## {t('md_technical_evidence', lang=resolved_lang)}",
         ]
 
         for k, v in self.technical_evidence.items():
             md.append(f"- **{k}:** {v}")
 
         if self.mitre_techniques:
-            md.append("\n## MITRE ATT&CK Mapping")
-            md.append("| ID | Technique | Tactic | Relevance |")
+            md.append(f"\n## {t('md_mitre_mapping', lang=resolved_lang)}")
+            md.append(
+                f"| ID | {t('md_technique', lang=resolved_lang)} | {t('md_tactic', lang=resolved_lang)} | {t('md_relevance', lang=resolved_lang)} |"
+            )
             md.append("| :--- | :--- | :--- | :--- |")
-            for t in self.mitre_techniques:
+            for tech in self.mitre_techniques:
                 md.append(
-                    f"| `{t.technique_id}` | {t.name} | {t.tactic} | {t.relevance_explanation} |"
+                    f"| `{tech.technique_id}` | {tech.name} | {tech.tactic} | {tech.relevance_explanation} |"
                 )
 
         if self.mitigations:
-            md.append("\n## Actionable Mitigations")
+            md.append(f"\n## {t('md_actionable_mitigations', lang=resolved_lang)}")
             for m in self.mitigations:
                 md.append(f"### [{m.priority}] {m.title} ({m.category})")
                 md.append(f"{m.description}\n")
                 if m.actionable_steps:
-                    md.append("**Implementation Steps:**")
+                    md.append(f"**{t('md_implementation_steps', lang=resolved_lang)}:**")
                     for step in m.actionable_steps:
                         md.append(f"1. {step}")
                 md.append("")
 
         if self.references:
-            md.append("## References & Advisories")
+            md.append(f"## {t('md_references', lang=resolved_lang)}")
             for ref in self.references:
                 md.append(f"- <{ref}>")
 

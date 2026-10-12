@@ -28,9 +28,7 @@ async def test_nvd_cve_lookup_success(
 
 
 @pytest.mark.asyncio
-async def test_nvd_client_without_api_key(
-    httpx_mock: HTTPXMock, nvd_cve_payload: dict
-) -> None:
+async def test_nvd_client_without_api_key(httpx_mock: HTTPXMock, nvd_cve_payload: dict) -> None:
     no_key_settings = Settings(
         nvd_api_key=None,
         enable_cache=False,

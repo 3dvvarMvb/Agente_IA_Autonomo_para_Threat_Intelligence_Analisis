@@ -1,0 +1,98 @@
+{
+  "report_id": "TR-E03BE681",
+  "generated_at": "2026-10-12T15:32:37.339865Z",
+  "target": "http://localhost:8081/dashboard",
+  "target_type": "url",
+  "executive_summary": "Web application security inspection for URL 'http://localhost:8081/dashboard' concluded with a composite risk score of 7.0/10.0 (HIGH, Grade: C). Identified missing defensive security headers (Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Strict-Transport-Security) and potential technology disclosures. Implementing recommended OWASP hardening middleware is strongly advised.",
+  "severity_level": "HIGH",
+  "risk_score": 7.0,
+  "risk_rationale": "Web application security inspection concluded with a risk score of 7.0/10.0 (Grade: C). Assessed 5 security controls (0 passed). Correlated with OWASP: A05:2021-Security Misconfiguration.",
+  "technical_evidence": {
+    "Web Security Inspection": {
+      "Target URL": "http://localhost:8081/dashboard",
+      "Status Code": 200,
+      "Security Grade": "C",
+      "Web Risk Score": "7.0/10.0",
+      "Server Banner": "uvicorn",
+      "Powered By": "Hidden/None",
+      "CORS Wildcard (*)": false,
+      "Missing or Failed Headers": [
+        "Content-Security-Policy (HIGH)",
+        "X-Frame-Options (MEDIUM)",
+        "X-Content-Type-Options (LOW)",
+        "Strict-Transport-Security (INFO)",
+        "Referrer-Policy (LOW)"
+      ],
+      "Cookie Findings": [],
+      "OWASP Tags": [
+        "A05:2021-Security Misconfiguration"
+      ]
+    },
+    "Telemetry Provider Statuses": {
+      "web_auditor": "OK",
+      "virustotal": "OK",
+      "shodan": "OK",
+      "nvd": "OK"
+    }
+  },
+  "correlated_cves": [],
+  "mitre_techniques": [
+    {
+      "technique_id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "description": "# MITRE ATT&CK Technique T1190: Exploit Public-Facing Application\n\n- **Technique ID:** T1190\n- **Tactic:** Initial Access (TA0001)\n- **Platforms:** Li...",
+      "relevance_explanation": "Correlated via internal knowledge base article 't1190_exploit_public_facing_application.md'."
+    },
+    {
+      "technique_id": "T1592",
+      "name": "Gather Victim Host Information",
+      "tactic": "Reconnaissance",
+      "description": "Adversaries may gather host information such as software versions from response headers.",
+      "relevance_explanation": "Server discloses technology fingerprint: uvicorn."
+    }
+  ],
+  "mitigations": [
+    {
+      "title": "Implement Missing OWASP Security Headers (CSP, X-Frame-Options, nosniff)",
+      "description": "Configure defensive HTTP response headers to prevent Cross-Site Scripting (XSS), Clickjacking, and MIME-sniffing.",
+      "priority": "HIGH",
+      "category": "Application Hardening",
+      "actionable_steps": [
+        "In FastAPI: Add middleware setting Content-Security-Policy, X-Frame-Options: DENY, and X-Content-Type-Options: nosniff.",
+        "In Express.js: Run 'npm install helmet' and add 'app.use(helmet())'.",
+        "In Next.js: Configure headers in next.config.js under 'async headers()'.",
+        "In Nginx: Add directives 'add_header X-Frame-Options DENY always;' and 'add_header X-Content-Type-Options nosniff always;'."
+      ]
+    },
+    {
+      "title": "Mask Technology Fingerprints (Server & X-Powered-By)",
+      "description": "Remove framework banners ('uvicorn') to impede adversary reconnaissance.",
+      "priority": "MEDIUM",
+      "category": "Configuration Change",
+      "actionable_steps": [
+        "In Express: Add 'app.disable(\"x-powered-by\")'.",
+        "In Uvicorn/FastAPI: Run with '--no-server-header' or strip the header in middleware.",
+        "In Nginx: Add 'server_tokens off;'."
+      ]
+    }
+  ],
+  "references": [
+    "https://owasp.org/www-project-secure-headers/",
+    "https://owasp.org/Top10/A05_2021-Security_Misconfiguration/",
+    "https://attack.mitre.org/techniques/T1190/",
+    "https://attack.mitre.org/techniques/T1592/"
+  ],
+  "execution_metadata": {
+    "iterations": 3,
+    "total_estimated_tokens": 1903,
+    "degraded_mode": false,
+    "successful_providers": [
+      "web_auditor",
+      "virustotal",
+      "shodan",
+      "nvd"
+    ],
+    "failed_providers": []
+  }
+}

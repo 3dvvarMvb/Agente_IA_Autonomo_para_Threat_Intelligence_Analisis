@@ -1,0 +1,11 @@
+{
+  "url": "http://localhost:8080/dashboard",
+  "status_code": 200,
+  "headers": {
+    "server": "uvicorn",
+    "x-powered-by": "Express/4.19.2",
+    "content-type": "text/html; charset=utf-8",
+    "access-control-allow-origin": "*",
+    "set-cookie": "session_id=ai_sess_8943729; Path=/"
+  }
+}

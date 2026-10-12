@@ -1,6 +1,5 @@
 """Shodan API asynchronous client."""
 
-
 from ti_agent.core.config import Settings, get_settings
 from ti_agent.core.exceptions import AuthenticationError, ResourceNotFoundError
 from ti_agent.core.logging import get_logger
@@ -73,14 +72,23 @@ class ShodanClient(BaseApiClient):
             try:
                 ips = await self.resolve_domain(indicator.value)
                 if ips:
-                    logger.info("Resolved domain %s to %s for Shodan lookup", indicator.value, ips[0])
+                    logger.info(
+                        "Resolved domain %s to %s for Shodan lookup", indicator.value, ips[0]
+                    )
                     return await self.get_host(ips[0])
             except Exception as exc:
                 logger.warning("Failed to resolve domain %s on Shodan: %s", indicator.value, exc)
             return None
 
-        elif indicator.type in (IndicatorType.CVE, IndicatorType.HASH_MD5, IndicatorType.HASH_SHA1, IndicatorType.HASH_SHA256):
-            logger.debug("Shodan host lookup not directly applicable for %s; skipping.", indicator.type.value)
+        elif indicator.type in (
+            IndicatorType.CVE,
+            IndicatorType.HASH_MD5,
+            IndicatorType.HASH_SHA1,
+            IndicatorType.HASH_SHA256,
+        ):
+            logger.debug(
+                "Shodan host lookup not directly applicable for %s; skipping.", indicator.type.value
+            )
             return None
 
         return None

@@ -71,7 +71,9 @@ class BaseApiClient:
         """Attempt to load mock data from fixtures directory for offline demo/testing."""
         fixture_paths = [
             Path("fixtures") / f"{fixture_name}.json",
-            Path(__file__).resolve().parent.parent.parent.parent / "fixtures" / f"{fixture_name}.json",
+            Path(__file__).resolve().parent.parent.parent.parent
+            / "fixtures"
+            / f"{fixture_name}.json",
         ]
         for p in fixture_paths:
             if p.is_file():
@@ -124,7 +126,9 @@ class BaseApiClient:
                     )
                     # Retry on 429 if attempts remain
                     if attempt.retry_state.attempt_number < 3:
-                        sleep_time = 0.01 if is_fast_mode else (2.0 * attempt.retry_state.attempt_number)
+                        sleep_time = (
+                            0.01 if is_fast_mode else (2.0 * attempt.retry_state.attempt_number)
+                        )
                         await asyncio.sleep(sleep_time)
                         raise httpx.TimeoutException(f"429 Rate limited by {self.provider_name}")
                     raise RateLimitExceededError(

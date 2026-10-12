@@ -1,0 +1,96 @@
+{
+  "report_id": "TR-737DAF85",
+  "generated_at": "2026-10-12T14:32:44.756920Z",
+  "target": "8.8.8.8",
+  "target_type": "ip",
+  "executive_summary": "Attack surface assessment for IP '8.8.8.8' concluded with a composite risk score of 5.4/10.0 (MEDIUM). Shodan indexed 2 publicly accessible ports (53, 443). Network hardening and ingress restriction should be applied to prevent reconnaissance.",
+  "severity_level": "MEDIUM",
+  "risk_score": 5.4,
+  "risk_rationale": "Calculated from Base CVSS (7.5 * 0.5) + Exploitability Factor (0.10 * 3.0) + Observed Exposure (0.70 * 2.0).",
+  "technical_evidence": {
+    "VirusTotal Telemetry": {
+      "Detection Ratio": "0/90",
+      "Reputation Score": 85,
+      "Is Flagged Malicious": false,
+      "Community Tags": [
+        "dns",
+        "google",
+        "resolver"
+      ],
+      "Categories": {
+        "Forcepoint ThreatSeeker": "information technology",
+        "Sophos": "infrastructure"
+      }
+    },
+    "Shodan Attack Surface": {
+      "Open Ports": [
+        53,
+        443
+      ],
+      "Hostnames": [
+        "dns.google"
+      ],
+      "Organization": "Google LLC",
+      "Operating System": "Unknown",
+      "Associated CVEs": [
+        "CVE-2019-0708"
+      ],
+      "Indexed Services": [
+        "Port 53/udp: Google DNS",
+        "Port 443/tcp: Google Frontend"
+      ]
+    },
+    "Telemetry Provider Statuses": {
+      "virustotal": "OK",
+      "shodan": "OK",
+      "nvd": "OK"
+    }
+  },
+  "correlated_cves": [
+    "CVE-2019-0708"
+  ],
+  "mitre_techniques": [
+    {
+      "technique_id": "T1071",
+      "name": "Application Layer Protocol",
+      "tactic": "Command and Control",
+      "description": "## Description\nAdversaries may communicate using application layer protocols to avoid detection by blending in with existing network traffic. Commonly...",
+      "relevance_explanation": "Correlated via internal knowledge base article 't1071_application_layer_protocol.md'."
+    },
+    {
+      "technique_id": "T1046",
+      "name": "Network Service Discovery",
+      "tactic": "Discovery",
+      "description": "Adversaries attempt to enumerate accessible services and exposed open ports.",
+      "relevance_explanation": "Shodan indexed 2 exposed public ports."
+    }
+  ],
+  "mitigations": [
+    {
+      "title": "Attack Surface Minimization & Port Restriction",
+      "description": "Close or firewall exposed ports observed in Shodan (53, 443).",
+      "priority": "MEDIUM",
+      "category": "Infrastructure Hardening",
+      "actionable_steps": [
+        "Audit public security groups and apply strict default-deny ingress rules.",
+        "Move administrative services (SSH, RDP, DB) behind corporate VPN or bastion jump hosts.",
+        "Sanitize application banners to prevent version leakage."
+      ]
+    }
+  ],
+  "references": [
+    "https://attack.mitre.org/techniques/T1071/",
+    "https://attack.mitre.org/techniques/T1046/"
+  ],
+  "execution_metadata": {
+    "iterations": 3,
+    "total_estimated_tokens": 1741,
+    "degraded_mode": false,
+    "successful_providers": [
+      "virustotal",
+      "shodan",
+      "nvd"
+    ],
+    "failed_providers": []
+  }
+}

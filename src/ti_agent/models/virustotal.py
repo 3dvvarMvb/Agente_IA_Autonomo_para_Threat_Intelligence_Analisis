@@ -38,7 +38,9 @@ class VirusTotalData(BaseModel):
     stats: VirusTotalStats = Field(default_factory=VirusTotalStats)
     reputation: int = Field(default=0, description="Community reputation score")
     community_tags: list[str] = Field(default_factory=list, description="Associated community tags")
-    categories: dict[str, str] = Field(default_factory=dict, description="Categorization by vendors")
+    categories: dict[str, str] = Field(
+        default_factory=dict, description="Categorization by vendors"
+    )
     last_analysis_date: datetime | None = Field(default=None)
     as_owner: str | None = Field(default=None, description="Autonomous System Owner (for IPs)")
     country: str | None = Field(default=None, description="Country code (for IPs)")
@@ -72,11 +74,7 @@ class VirusTotalData(BaseModel):
         )
 
         ts = attributes.get("last_analysis_date")
-        analysis_date = (
-            datetime.fromtimestamp(ts, tz=UTC)
-            if isinstance(ts, (int, float))
-            else None
-        )
+        analysis_date = datetime.fromtimestamp(ts, tz=UTC) if isinstance(ts, (int, float)) else None
 
         return cls(
             target=target,

@@ -1,0 +1,82 @@
+{
+  "report_id": "TR-32DEDCA0",
+  "generated_at": "2026-10-12T15:53:58.675880Z",
+  "target": "CVE-2021-44228",
+  "target_type": "cve",
+  "executive_summary": "La evaluación autónoma de seguridad para CVE 'CVE-2021-44228' concluyó con una puntuación de riesgo compuesta de 10.0/10.0 (CRITICAL). La vulnerabilidad está calificada con CVSS 10.0 (CRITICAL) y permite explotación no autenticada a través de la red. Se recomienda parcheo inmediato y filtrado perimetral de salida.",
+  "severity_level": "CRITICAL",
+  "risk_score": 10.0,
+  "risk_rationale": "Calculado a partir de CVSS Base (10.0 * 0.5) + Factor de Explotabilidad (1.00 * 3.0) + Exposición Observada (1.00 * 2.0).",
+  "technical_evidence": {
+    "NVD Vulnerability": {
+      "CVE ID": "CVE-2021-44228",
+      "CVSS Base Score": 10.0,
+      "Severity": "CRITICAL",
+      "Vector String": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H",
+      "Weaknesses (CWE)": [
+        "CWE-502",
+        "CWE-400"
+      ],
+      "Affected Products": [
+        "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"
+      ]
+    },
+    "Telemetry Provider Statuses": {
+      "virustotal": "OK",
+      "shodan": "OK",
+      "nvd": "OK"
+    }
+  },
+  "correlated_cves": [
+    "CVE-2021-44228"
+  ],
+  "mitre_techniques": [
+    {
+      "technique_id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactic": "Acceso Inicial",
+      "description": "A prominent example is **CVE-2021-44228 (Log4Shell)**, an unauthenticated Remote Code Execution (RCE) flaw in Apache Log4j2 JNDI message lookup substi...",
+      "relevance_explanation": "Correlacionado mediante artículo de base de conocimiento 't1190_exploit_public_facing_application.md'."
+    }
+  ],
+  "mitigations": [
+    {
+      "title": "Parcheo de Seguridad de Emergencia para CVE-2021-44228",
+      "description": "Actualizar paquetes de software y dependencias afectadas para remediar CVE-2021-44228.",
+      "priority": "CRITICAL",
+      "category": "Parcheo",
+      "actionable_steps": [
+        "Identificar todos los hosts y contenedores en producción que ejecutan la dependencia vulnerable.",
+        "Desplegar paquetes o librerías actualizadas por el fabricante en staging.",
+        "Aplicar despliegue de emergencia en producción siguiendo el protocolo de gestión de cambios."
+      ]
+    },
+    {
+      "title": "Parcheo Virtual con WAF y Filtrado de Salida en Perímetro",
+      "description": "Desplegar firmas de inspección perimetral y restringir protocolos salientes inesperados.",
+      "priority": "HIGH",
+      "category": "Hardening de Red",
+      "actionable_steps": [
+        "Configurar reglas en WAF para bloquear payloads de exploits en cabeceras y cuerpos HTTP.",
+        "Bloquear tráfico saliente del servidor en puertos no estándar (ej. LDAP 389/636, RMI 1099)."
+      ]
+    }
+  ],
+  "references": [
+    "https://logging.apache.org/log4j/2.x/security.html",
+    "https://www.cisa.gov/uscert/ed-22-02-apache-log4j-recommended-mitigation-measures",
+    "https://attack.mitre.org/techniques/T1190/"
+  ],
+  "language": "es",
+  "execution_metadata": {
+    "iterations": 3,
+    "total_estimated_tokens": 1777,
+    "degraded_mode": false,
+    "successful_providers": [
+      "virustotal",
+      "shodan",
+      "nvd"
+    ],
+    "failed_providers": []
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "report_id": "TR-5E039E9C",
+  "generated_at": "2026-10-12T15:54:00.359006Z",
+  "target": "http://localhost:8080/dashboard",
+  "target_type": "url",
+  "executive_summary": "La inspección de seguridad de la aplicación web para la URL 'http://localhost:8080/dashboard' concluyó con una puntuación de riesgo compuesta de 10.0/10.0 (CRITICAL, Calificación: F). Se identificaron cabeceras defensivas faltantes (Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Strict-Transport-Security) y posible divulgación de tecnologías. Se recomienda implementar el middleware de hardening de OWASP recomendado.",
+  "severity_level": "CRITICAL",
+  "risk_score": 10.0,
+  "risk_rationale": "La inspección de seguridad de la aplicación web concluyó con una puntuación de riesgo de 10.0/10.0 (Calificación: F). Se evaluaron 5 controles de seguridad (0 aprobados). Correlacionado con OWASP: A01:2021-Broken Access Control, A07:2021-Identification and Authentication Failures, A05:2021-Security Misconfiguration.",
+  "technical_evidence": {
+    "Web Security Inspection": {
+      "Target URL": "http://localhost:8080/dashboard",
+      "Status Code": 200,
+      "Security Grade": "F",
+      "Web Risk Score": "10.0/10.0",
+      "Server Banner": "uvicorn",
+      "Powered By": "Express/4.19.2",
+      "CORS Wildcard (*)": true,
+      "Missing or Failed Headers": [
+        "Content-Security-Policy (HIGH)",
+        "X-Frame-Options (MEDIUM)",
+        "X-Content-Type-Options (LOW)",
+        "Strict-Transport-Security (INFO)",
+        "Referrer-Policy (LOW)"
+      ],
+      "Cookie Findings": [
+        "session_id: Missing HttpOnly: cookie is accessible via JavaScript (XSS theft risk)., Missing SameSite: susceptible to Cross-Site Request Forgery (CSRF)."
+      ],
+      "OWASP Tags": [
+        "A01:2021-Broken Access Control",
+        "A07:2021-Identification and Authentication Failures",
+        "A05:2021-Security Misconfiguration"
+      ]
+    },
+    "Telemetry Provider Statuses": {
+      "web_auditor": "OK",
+      "virustotal": "OK",
+      "shodan": "OK",
+      "nvd": "OK"
+    }
+  },
+  "correlated_cves": [],
+  "mitre_techniques": [
+    {
+      "technique_id": "T1190",
+      "name": "Exploit Public-Facing Application",
+      "tactic": "Acceso Inicial",
+      "description": "# MITRE ATT&CK Technique T1190: Exploit Public-Facing Application\n\n- **Technique ID:** T1190\n- **Tactic:** Initial Access (TA0001)\n- **Platforms:** Li...",
+      "relevance_explanation": "Correlacionado mediante artículo de base de conocimiento 't1190_exploit_public_facing_application.md'."
+    },
+    {
+      "technique_id": "T1592",
+      "name": "Recolección de Información del Host Víctima",
+      "tactic": "Reconocimiento",
+      "description": "Los atacantes pueden recopilar información del host como versiones de software a partir de cabeceras.",
+      "relevance_explanation": "El servidor divulga huella tecnológica en cabeceras: uvicorn."
+    }
+  ],
+  "mitigations": [
+    {
+      "title": "Implementar Cabeceras de Seguridad OWASP (CSP, X-Frame-Options, nosniff)",
+      "description": "Configurar cabeceras de respuesta HTTP defensivas para prevenir Cross-Site Scripting (XSS), Clickjacking y MIME-sniffing.",
+      "priority": "HIGH",
+      "category": "Hardening de Aplicación",
+      "actionable_steps": [
+        "En FastAPI: Añadir middleware configurando Content-Security-Policy, X-Frame-Options: DENY y X-Content-Type-Options: nosniff.",
+        "En Express.js: Ejecutar 'npm install helmet' y registrar 'app.use(helmet())'.",
+        "En Next.js: Configurar cabeceras en next.config.js bajo 'async headers()'.",
+        "En Nginx: Añadir directivas 'add_header X-Frame-Options DENY always;' y 'add_header X-Content-Type-Options nosniff always;'."
+      ]
+    },
+    {
+      "title": "Ocultar Huellas Tecnológicas (Server y X-Powered-By)",
+      "description": "Eliminar banners de frameworks ('uvicorn') para dificultar el reconocimiento del adversario.",
+      "priority": "MEDIUM",
+      "category": "Cambio de Configuración",
+      "actionable_steps": [
+        "En Express: Añadir 'app.disable(\"x-powered-by\")'.",
+        "En Uvicorn/FastAPI: Ejecutar con '--no-server-header' o suprimir la cabecera en middleware.",
+        "En Nginx: Añadir 'server_tokens off;'."
+      ]
+    },
+    {
+      "title": "Reforzar Atributos de Cookies de Sesión (HttpOnly, Secure, SameSite)",
+      "description": "Asegurar que las cookies estén protegidas contra robo vía JavaScript y peticiones no autorizadas de origen cruzado.",
+      "priority": "HIGH",
+      "category": "Seguridad de Autenticación",
+      "actionable_steps": [
+        "Configurar 'HttpOnly: true' en todas las cookies de sesión y autenticación.",
+        "Configurar 'SameSite: Lax' o 'Strict' para neutralizar Cross-Site Request Forgery (CSRF).",
+        "Activar 'Secure: true' al servir sobre TLS/HTTPS."
+      ]
+    }
+  ],
+  "references": [
+    "https://owasp.org/www-project-secure-headers/",
+    "https://owasp.org/Top10/A05_2021-Security_Misconfiguration/",
+    "https://attack.mitre.org/techniques/T1190/",
+    "https://attack.mitre.org/techniques/T1592/"
+  ],
+  "language": "es",
+  "execution_metadata": {
+    "iterations": 3,
+    "total_estimated_tokens": 2256,
+    "degraded_mode": false,
+    "successful_providers": [
+      "web_auditor",
+      "virustotal",
+      "shodan",
+      "nvd"
+    ],
+    "failed_providers": []
+  }
+}

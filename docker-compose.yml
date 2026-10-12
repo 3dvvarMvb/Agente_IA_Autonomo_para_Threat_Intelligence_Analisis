@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  ti-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: threat-intel-agent
+    env_file:
+      - .env
+    environment:
+      - TI_AGENT_OFFLINE_MODE=${TI_AGENT_OFFLINE_MODE:-false}
+      - TI_AGENT_LLM_PROVIDER=${TI_AGENT_LLM_PROVIDER:-ollama}
+      - TI_AGENT_OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - ti_agent_cache:/app/.cache/diskcache
+      - ti_agent_chroma:/app/data/chroma
+      - ./examples/reports:/app/reports
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - ti_network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ti-agent-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ti_network
+
+volumes:
+  ti_agent_cache:
+    driver: local
+  ti_agent_chroma:
+    driver: local
+  ollama_models:
+    driver: local
+
+networks:
+  ti_network:
+    driver: bridge

@@ -105,9 +105,7 @@ async def test_virustotal_401_authentication_error(
 
 
 @pytest.mark.asyncio
-async def test_virustotal_404_not_found(
-    httpx_mock: HTTPXMock, test_settings: Settings
-) -> None:
+async def test_virustotal_404_not_found(httpx_mock: HTTPXMock, test_settings: Settings) -> None:
     httpx_mock.add_response(
         url="https://www.virustotal.com/api/v3/ip_addresses/1.2.3.4",
         status_code=404,
@@ -121,9 +119,7 @@ async def test_virustotal_404_not_found(
 
 
 @pytest.mark.asyncio
-async def test_virustotal_429_rate_limit(
-    httpx_mock: HTTPXMock, test_settings: Settings
-) -> None:
+async def test_virustotal_429_rate_limit(httpx_mock: HTTPXMock, test_settings: Settings) -> None:
     # Simulates 3 consecutive 429 responses
     for _ in range(3):
         httpx_mock.add_response(
